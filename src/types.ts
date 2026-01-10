@@ -1372,28 +1372,15 @@ export const ToolSchema = z.object({
     description: z.string().optional(),
     /**
      * A JSON Schema 2020-12 object defining the expected parameters for the tool.
-     * Must have type: 'object' at the root level per MCP spec.
+     * Can be any valid JSON Schema (object, array, oneOf, anyOf, etc.).
      */
-    inputSchema: z
-        .object({
-            type: z.literal('object'),
-            properties: z.record(z.string(), AssertObjectSchema).optional(),
-            required: z.array(z.string()).optional()
-        })
-        .catchall(z.unknown()),
+    inputSchema: z.object({}).catchall(z.unknown()),
     /**
      * An optional JSON Schema 2020-12 object defining the structure of the tool's output
      * returned in the structuredContent field of a CallToolResult.
-     * Must have type: 'object' at the root level per MCP spec.
+     * Can be any valid JSON Schema (object, array, primitive types, etc.).
      */
-    outputSchema: z
-        .object({
-            type: z.literal('object'),
-            properties: z.record(z.string(), AssertObjectSchema).optional(),
-            required: z.array(z.string()).optional()
-        })
-        .catchall(z.unknown())
-        .optional(),
+    outputSchema: z.object({}).catchall(z.unknown()).optional(),
     /**
      * Optional additional tool information.
      */
@@ -1437,11 +1424,12 @@ export const CallToolResultSchema = ResultSchema.extend({
     content: z.array(ContentBlockSchema).default([]),
 
     /**
-     * An object containing structured tool output.
+     * Structured tool output conforming to the tool's outputSchema.
      *
-     * If the Tool defines an outputSchema, this field MUST be present in the result, and contain a JSON object that matches the schema.
+     * If the Tool defines an outputSchema, this field MUST be present in the result,
+     * and contain a JSON value that matches the schema (can be object, array, primitive, etc.).
      */
-    structuredContent: z.record(z.string(), z.unknown()).optional(),
+    structuredContent: z.unknown().optional(),
 
     /**
      * Whether the tool call ended in an error.
@@ -1681,7 +1669,7 @@ export const ToolResultContentSchema = z.object({
     type: z.literal('tool_result'),
     toolUseId: z.string().describe('The unique identifier for the corresponding tool call.'),
     content: z.array(ContentBlockSchema).default([]),
-    structuredContent: z.object({}).loose().optional(),
+    structuredContent: z.unknown().optional(),
     isError: z.boolean().optional(),
 
     /**

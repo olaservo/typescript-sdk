@@ -1115,9 +1115,10 @@ export interface CallToolResult extends Result {
   content: ContentBlock[];
 
   /**
-   * An optional JSON object that represents the structured result of the tool call.
+   * The structured result of the tool call, conforming to the tool's outputSchema.
+   * Can be any JSON value (object, array, primitive, etc.).
    */
-  structuredContent?: { [key: string]: unknown };
+  structuredContent?: unknown;
 
   /**
    * Whether the tool call ended in an error.
@@ -1263,13 +1264,9 @@ export interface Tool extends BaseMetadata, Icons {
 
   /**
    * A JSON Schema object defining the expected parameters for the tool.
+   * Can be any valid JSON Schema (object, array, oneOf, anyOf, etc.).
    */
-  inputSchema: {
-    $schema?: string;
-    type: "object";
-    properties?: { [key: string]: object };
-    required?: string[];
-  };
+  inputSchema: { [key: string]: unknown };
 
   /**
    * Execution-related properties for this tool.
@@ -1281,14 +1278,9 @@ export interface Tool extends BaseMetadata, Icons {
    * the structuredContent field of a CallToolResult.
    *
    * Defaults to JSON Schema 2020-12 when no explicit $schema is provided.
-   * Currently restricted to type: "object" at the root level.
+   * Can be any valid JSON Schema (object, array, primitive types, etc.).
    */
-  outputSchema?: {
-    $schema?: string;
-    type: "object";
-    properties?: { [key: string]: object };
-    required?: string[];
-  };
+  outputSchema?: { [key: string]: unknown };
 
   /**
    * Optional additional tool information.
@@ -1890,11 +1882,12 @@ export interface ToolResultContent {
   content: ContentBlock[];
 
   /**
-   * An optional structured result object.
+   * An optional structured result value.
    *
    * If the tool defined an outputSchema, this SHOULD conform to that schema.
+   * Can be any JSON value (object, array, primitive, etc.).
    */
-  structuredContent?: { [key: string]: unknown };
+  structuredContent?: unknown;
 
   /**
    * Whether the tool use resulted in an error.
