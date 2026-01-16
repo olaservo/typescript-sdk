@@ -1264,7 +1264,7 @@ export interface Tool extends BaseMetadata, Icons {
 
   /**
    * A JSON Schema object defining the expected parameters for the tool.
-   * Can be any valid JSON Schema (object, array, oneOf, anyOf, etc.).
+   * Can be any valid JSON Schema object, including compositions like oneOf/anyOf at root.
    */
   inputSchema: { [key: string]: unknown };
 
