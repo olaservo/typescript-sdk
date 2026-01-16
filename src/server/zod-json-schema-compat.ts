@@ -44,6 +44,26 @@ export function toJsonSchemaCompat(schema: AnyObjectSchema, opts?: CommonOpts): 
     }) as JsonSchema;
 }
 
+/**
+ * SEP-834: Convert any Zod schema to JSON Schema (not just object schemas).
+ * This enables array, primitive, and composition schemas for outputSchema.
+ */
+export function toJsonSchemaCompatAny(schema: AnySchema, opts?: CommonOpts): JsonSchema {
+    if (isZ4Schema(schema)) {
+        // v4 branch — use Mini's built-in toJSONSchema
+        return z4mini.toJSONSchema(schema as z4c.$ZodType, {
+            target: mapMiniTarget(opts?.target),
+            io: opts?.pipeStrategy ?? 'input'
+        }) as JsonSchema;
+    }
+
+    // v3 branch — use vendored converter
+    return zodToJsonSchema(schema as z3.ZodTypeAny, {
+        strictUnions: opts?.strictUnions ?? true,
+        pipeStrategy: opts?.pipeStrategy ?? 'input'
+    }) as JsonSchema;
+}
+
 export function getMethodLiteral(schema: AnyObjectSchema): string {
     const shape = getObjectShape(schema);
     const methodSchema = shape?.method as AnySchema | undefined;

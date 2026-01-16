@@ -188,6 +188,44 @@ export function normalizeObjectSchema(schema: AnySchema | ZodRawShapeCompat | un
     return undefined;
 }
 
+/**
+ * SEP-834: Normalizes any schema type (not just objects).
+ * This enables array, primitive, and composition schemas for outputSchema.
+ * Returns the schema if it's a valid Zod schema, or wraps raw shapes into objects.
+ */
+export function normalizeAnySchema(schema: AnySchema | ZodRawShapeCompat | undefined): AnySchema | undefined {
+    if (!schema) return undefined;
+
+    // First check if it's a raw shape (Record<string, AnySchema>)
+    if (typeof schema === 'object') {
+        const asV3 = schema as unknown as ZodV3Internal;
+        const asV4 = schema as unknown as ZodV4Internal;
+
+        // If it's not a schema instance (no _def or _zod), it might be a raw shape
+        if (!asV3._def && !asV4._zod) {
+            // Check if all values are schemas (heuristic to confirm it's a raw shape)
+            const values = Object.values(schema);
+            if (
+                values.length > 0 &&
+                values.every(
+                    v =>
+                        typeof v === 'object' &&
+                        v !== null &&
+                        ((v as unknown as ZodV3Internal)._def !== undefined ||
+                            (v as unknown as ZodV4Internal)._zod !== undefined ||
+                            typeof (v as { parse?: unknown }).parse === 'function')
+                )
+            ) {
+                // It's a raw shape, wrap it into an object schema
+                return objectFromShape(schema as ZodRawShapeCompat);
+            }
+        }
+    }
+
+    // It's already a schema (object, array, primitive, etc.) - return as-is
+    return schema as AnySchema;
+}
+
 // --- Error message extraction ---
 /**
  * Safely extracts an error message from a parse result error.

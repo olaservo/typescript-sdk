@@ -6,6 +6,7 @@ import {
     SchemaOutput,
     ShapeOutput,
     normalizeObjectSchema,
+    normalizeAnySchema,
     safeParseAsync,
     getObjectShape,
     objectFromShape,
@@ -14,7 +15,7 @@ import {
     isSchemaOptional,
     getLiteralValue
 } from './zod-compat.js';
-import { toJsonSchemaCompat } from './zod-json-schema-compat.js';
+import { toJsonSchemaCompat, toJsonSchemaCompatAny } from './zod-json-schema-compat.js';
 import {
     Implementation,
     Tool,
@@ -160,9 +161,10 @@ export class McpServer {
                         };
 
                         if (tool.outputSchema) {
-                            const obj = normalizeObjectSchema(tool.outputSchema);
-                            if (obj) {
-                                toolDefinition.outputSchema = toJsonSchemaCompat(obj, {
+                            // SEP-834: Support any schema type for outputSchema (array, primitive, object)
+                            const schema = normalizeAnySchema(tool.outputSchema);
+                            if (schema) {
+                                toolDefinition.outputSchema = toJsonSchemaCompatAny(schema, {
                                     strictUnions: true,
                                     pipeStrategy: 'output'
                                 }) as Tool['outputSchema'];
@@ -305,9 +307,9 @@ export class McpServer {
             );
         }
 
-        // if the tool has an output schema, validate structured content
-        const outputObj = normalizeObjectSchema(tool.outputSchema) as AnyObjectSchema;
-        const parseResult = await safeParseAsync(outputObj, result.structuredContent);
+        // SEP-834: if the tool has an output schema, validate structured content (supports any schema type)
+        const outputSchema = normalizeAnySchema(tool.outputSchema);
+        const parseResult = await safeParseAsync(outputSchema as AnySchema, result.structuredContent);
         if (!parseResult.success) {
             const error = 'error' in parseResult ? parseResult.error : 'Unknown error';
             const errorMessage = getParseErrorMessage(error);
