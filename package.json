@@ -1,6 +1,6 @@
 {
     "name": "@olaservo/mcp-sdk",
-    "version": "1.25.2-sep834.3",
+    "version": "1.25.2-sep834.4",
     "description": "Model Context Protocol implementation for TypeScript (SEP-834 fork with loosened JSON Schema restrictions)",
     "license": "MIT",
     "author": "Anthropic, PBC (https://anthropic.com)",

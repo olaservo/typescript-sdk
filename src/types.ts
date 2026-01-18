@@ -1372,15 +1372,21 @@ export const ToolSchema = z.object({
     description: z.string().optional(),
     /**
      * A JSON Schema 2020-12 object defining the expected parameters for the tool.
-     * Can be any valid JSON Schema object, including compositions like oneOf/anyOf at root.
+     * Requires type: "object" (since tool args are objects), but allows any additional
+     * JSON Schema properties for sophisticated validation (oneOf, anyOf, etc.)
      */
-    inputSchema: z.object({}).catchall(z.unknown()),
+    inputSchema: z.object({
+        $schema: z.string().optional(),
+        type: z.literal("object"),
+    }).catchall(z.unknown()),
     /**
      * An optional JSON Schema 2020-12 object defining the structure of the tool's output
      * returned in the structuredContent field of a CallToolResult.
      * Can be any valid JSON Schema (object, array, primitive types, etc.).
      */
-    outputSchema: z.object({}).catchall(z.unknown()).optional(),
+    outputSchema: z.object({
+        $schema: z.string().optional(),
+    }).catchall(z.unknown()).optional(),
     /**
      * Optional additional tool information.
      */
