@@ -27,7 +27,7 @@ pnpm --filter @modelcontextprotocol/core test -- -t "test name"
 When making breaking changes, document them in **both**:
 
 - `docs/migration.md` — human-readable guide with before/after code examples
-- `docs/migration-SKILL.md` — LLM-optimized mapping tables for mechanical migration
+- `skills/migrate-v1-to-v2/SKILL.md` — LLM-optimized mapping tables for mechanical migration. Skills under `skills/<name>/` are published to `https://ts.sdk.modelcontextprotocol.io/.well-known/agent-skills/` by `.github/workflows/deploy-docs.yml` for agent discovery.
 
 Include what changed, why, and how to migrate. Search for related sections and group related changes together rather than adding new standalone sections.
 

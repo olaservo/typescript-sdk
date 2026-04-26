@@ -40,6 +40,30 @@ jobs:
             - name: Generate multi-version docs
               run: bash scripts/generate-multidoc.sh tmp/docs-combined
 
+            # Skills only live on main (they're a v2 concept). Source from origin/main
+            # so v1.x-triggered builds still publish them.
+            - name: Checkout skills from main
+              uses: actions/checkout@v6
+              with:
+                  ref: main
+                  sparse-checkout: skills
+                  sparse-checkout-cone-mode: false
+                  path: main-skills
+
+            # Publishes skills/<name>/SKILL.md at /.well-known/agent-skills/ on the docs origin.
+            # Requires the docs site to be served at the origin root (custom subdomain
+            # ts.sdk.modelcontextprotocol.io). A GitHub Pages project subpath would break
+            # RFC 8615 origin-root discovery.
+            - name: Build agent skills index
+              uses: agentskills/build-for-well-known@v1
+              with:
+                  skills: main-skills/skills
+                  output: tmp/docs-combined/.well-known/agent-skills
+
+            # Jekyll silently drops directories starting with "." (including .well-known/).
+            - name: Disable Jekyll
+              run: touch tmp/docs-combined/.nojekyll
+
             - name: Configure Pages
               uses: actions/configure-pages@v6
 

@@ -50,7 +50,7 @@ review rounds and grows over time.
 
 **Tests & docs**
 - New behavior has vitest coverage including error paths
-- Breaking changes documented in `docs/migration.md` and `docs/migration-SKILL.md`
+- Breaking changes documented in `docs/migration.md` and `skills/migrate-v1-to-v2/SKILL.md`
 - Bugfix or behavior change: check whether `docs/**/*.md` describes the old behavior and needs updating; flag prose that now contradicts the implementation
 - New feature: verify prose documentation is added (not just JSDoc), and assess whether `examples/` needs a new or updated example
 - Behavior change: assess whether existing `examples/` still compile and demonstrate the current API
