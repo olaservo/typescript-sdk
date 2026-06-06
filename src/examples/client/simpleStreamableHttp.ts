@@ -826,7 +826,7 @@ async function readResource(uri: string): Promise<void> {
         const result = await client.request(request, ReadResourceResultSchema);
 
         console.log('Resource contents:');
-        for (const content of result.contents) {
+        for (const content of result.contents ?? []) {
             console.log(`  URI: ${content.uri}`);
             if (content.mimeType) {
                 console.log(`  Type: ${content.mimeType}`);

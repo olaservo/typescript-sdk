@@ -1034,9 +1034,16 @@ export const ReadResourceRequestSchema = RequestSchema.extend({
 
 /**
  * The server's response to a resources/read request from the client.
+ *
+ * For a normal resource the server returns `contents`. As an alternative to a
+ * dedicated `resources/directory/read` call, a server may answer a read of a
+ * directory resource (`mimeType: "inode/directory"`) by returning `resources` —
+ * the directory's children as metadata — in a single round trip. Exactly one of
+ * `contents` / `resources` is expected.
  */
 export const ReadResourceResultSchema = ResultSchema.extend({
-    contents: z.array(z.union([TextResourceContentsSchema, BlobResourceContentsSchema]))
+    contents: z.array(z.union([TextResourceContentsSchema, BlobResourceContentsSchema])).optional(),
+    resources: z.array(ResourceSchema).optional()
 });
 
 /**
