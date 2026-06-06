@@ -888,6 +888,13 @@ export const AnnotationsSchema = z.object({
 /**
  * A known resource that the server is capable of reading.
  */
+/**
+ * The MIME type that marks a resource as a directory (a collection of other
+ * resources). Clients can list a directory's children with a
+ * `resources/directory/read` request.
+ */
+export const DIRECTORY_MIME_TYPE = 'inode/directory';
+
 export const ResourceSchema = z.object({
     ...BaseMetadataSchema.shape,
     ...IconsSchema.shape,
@@ -905,6 +912,10 @@ export const ResourceSchema = z.object({
 
     /**
      * The MIME type of this resource, if known.
+     *
+     * Resources that represent a directory (i.e. a collection of other
+     * resources) should use the `inode/directory` MIME type. Clients can read
+     * a directory's children with a `resources/directory/read` request.
      */
     mimeType: z.optional(z.string()),
 
@@ -914,6 +925,15 @@ export const ResourceSchema = z.object({
      * This can be used by Hosts to display file sizes and estimate context window usage.
      */
     size: z.optional(z.number()),
+
+    /**
+     * An opaque digest of the resource's content (e.g. `"sha256:9f2b…"`).
+     *
+     * Clients can use this for caching and consistency: if the digest is
+     * unchanged the cached content is still valid, and a changed digest signals
+     * the resource should be re-read.
+     */
+    digest: z.optional(z.string()),
 
     /**
      * Optional annotations for the client.
@@ -1017,6 +1037,39 @@ export const ReadResourceRequestSchema = RequestSchema.extend({
  */
 export const ReadResourceResultSchema = ResultSchema.extend({
     contents: z.array(z.union([TextResourceContentsSchema, BlobResourceContentsSchema]))
+});
+
+/**
+ * Parameters for a `resources/directory/read` request.
+ */
+export const ReadResourceDirectoryRequestParamsSchema = ResourceRequestParamsSchema.extend({
+    /**
+     * An opaque token representing the current pagination position.
+     * If provided, the server should return results starting after this cursor.
+     */
+    cursor: CursorSchema.optional()
+});
+
+/**
+ * Sent from the client to the server, to read the immediate children of a
+ * directory resource (one whose `mimeType` is `inode/directory`).
+ *
+ * This behaves like `ls`: the response lists the children's metadata (URI,
+ * name, mimeType, digest, …) but does NOT include their contents. Children are
+ * read individually with `resources/read`, and child directories can in turn be
+ * listed with another `resources/directory/read`.
+ */
+export const ReadResourceDirectoryRequestSchema = RequestSchema.extend({
+    method: z.literal('resources/directory/read'),
+    params: ReadResourceDirectoryRequestParamsSchema
+});
+
+/**
+ * The server's response to a `resources/directory/read` request. Shares the
+ * shape of a `resources/list` result: a paginated array of resource metadata.
+ */
+export const ReadResourceDirectoryResultSchema = PaginatedResultSchema.extend({
+    resources: z.array(ResourceSchema)
 });
 
 /**
@@ -2235,6 +2288,7 @@ export const ClientRequestSchema = z.union([
     ListResourcesRequestSchema,
     ListResourceTemplatesRequestSchema,
     ReadResourceRequestSchema,
+    ReadResourceDirectoryRequestSchema,
     SubscribeRequestSchema,
     UnsubscribeRequestSchema,
     CallToolRequestSchema,
@@ -2297,6 +2351,7 @@ export const ServerResultSchema = z.union([
     ListResourcesResultSchema,
     ListResourceTemplatesResultSchema,
     ReadResourceResultSchema,
+    ReadResourceDirectoryResultSchema,
     CallToolResultSchema,
     ListToolsResultSchema,
     GetTaskResultSchema,
@@ -2501,6 +2556,9 @@ export type ResourceRequestParams = Infer<typeof ResourceRequestParamsSchema>;
 export type ReadResourceRequestParams = Infer<typeof ReadResourceRequestParamsSchema>;
 export type ReadResourceRequest = Infer<typeof ReadResourceRequestSchema>;
 export type ReadResourceResult = Infer<typeof ReadResourceResultSchema>;
+export type ReadResourceDirectoryRequestParams = Infer<typeof ReadResourceDirectoryRequestParamsSchema>;
+export type ReadResourceDirectoryRequest = Infer<typeof ReadResourceDirectoryRequestSchema>;
+export type ReadResourceDirectoryResult = Infer<typeof ReadResourceDirectoryResultSchema>;
 export type ResourceListChangedNotification = Infer<typeof ResourceListChangedNotificationSchema>;
 export type SubscribeRequestParams = Infer<typeof SubscribeRequestParamsSchema>;
 export type SubscribeRequest = Infer<typeof SubscribeRequestSchema>;

@@ -392,6 +392,7 @@ export class Server<
             case 'resources/list':
             case 'resources/templates/list':
             case 'resources/read':
+            case 'resources/directory/read':
                 if (!this._capabilities.resources) {
                     throw new Error(`Server does not support resources (required for ${method})`);
                 }
